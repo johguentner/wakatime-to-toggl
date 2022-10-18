@@ -16,16 +16,16 @@ module.exports = async function (flags) {
     );
 
     // Find which projects are not in Toggl yet
-    const projectsToCreate = wakaTimeProjects.filter(
-        (p) => !togglInfo.projects.find((t) => t.name.toLowerCase() === p.toLowerCase())
-    );
+    //const projectsToCreate = wakaTimeProjects.filter(
+    //    (p) => !togglInfo.projects.find((t) => t.name.toLowerCase() === p.toLowerCase())
+    //);
 
     // Create projects in Toggl
-    for (const project of projectsToCreate) {
-        const created = await toggl.createProject(project, togglInfo.workspaceId, flags.toggl);
-        togglInfo.projects.push(created);
-        await sleep(1000); // One request / second to avoid hitting the limit
-    }
+    //for (const project of projectsToCreate) {
+    //    const created = await toggl.createProject(project, togglInfo.workspaceId, flags.toggl);
+    //    togglInfo.projects.push(created);
+    //    await sleep(1000); // One request / second to avoid hitting the limit
+    //}
 
     const projectIds = togglInfo.projects.reduce((acc, p) => {
         acc[p.name.toLowerCase()] = p.id;
@@ -40,6 +40,7 @@ module.exports = async function (flags) {
     for (const entry of wakaTimeActivity) {
         const projectId = projectIds[entry.project.toLowerCase()];
         if (!projectId) {
+            continue;
             throw new Error(`project "${entry.project}" doesn't exist in Toggl`);
         }
         const start = new Date(Math.round(entry.time) * 1000).toISOString();
