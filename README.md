@@ -24,7 +24,7 @@ Sync your WakaTime data in Toggl
 1.  Download and install [Node.js](https://nodejs.org/en/download/)
 2.  Install **wakatime-to-toggl** with `npm i -g wakatime-to-toggl`
 3.  Run the following command to sync data from yesterday: `wakatime-to-toggl -w <wakatime-api-key> -t <toggl-api-key>`
-4.  Ideally, run **wakatime-to-toggl** everyday
+4.  Ideally, run **wakatime-to-toggl** everyday (action)
 
 ## Option 2 - Run automatically everyday using Github Actions
 
