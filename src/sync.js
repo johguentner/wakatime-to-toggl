@@ -40,6 +40,7 @@ export default async function (flags) {
   for (const entry of wakaTimeActivity) {
     const projectId = projectIds[entry.project.toLowerCase()];
     if (!projectId) {
+      continue;
       throw new Error(`project "${entry.project}" doesn't exist in Toggl`);
     }
     const start = new Date(Math.round(entry.time) * 1000).toISOString();
