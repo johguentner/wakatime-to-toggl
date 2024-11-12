@@ -8,7 +8,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 20
       - run: npx https://github.com/johguentner/wakatime-to-toggl -w "$WAKATIME_API_KEY" -t "$TOGGL_API_KEY"
         env:
           TOGGL_API_KEY: '${{ secrets.TOGGL_API_KEY }}'
