@@ -106,7 +106,7 @@ function mergeEntries(entries) {
     const gap = curr.time - prevEnd;
 
     if (curr.project.toLowerCase() === prev.project.toLowerCase() && gap <= MERGE_GAP_SECONDS) {
-      prev.duration = curr.time + curr.duration - prev.time;
+      prev.duration = Math.max(prev.time + prev.duration, curr.time + curr.duration) - prev.time;
     } else {
       merged.push({ ...curr });
     }
