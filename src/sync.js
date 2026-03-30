@@ -2,10 +2,19 @@ import { getActivity } from './wakatime.js';
 import { addEntry, createProject, getInfo } from './toggl.js';
 import ora from 'ora';
 
+const MERGE_GAP_SECONDS = 15 * 60; // 15 minutes
+const MIN_ENTRY_DURATION = 10 * 60; // 10 minutes
+
 export default async function (flags) {
   // Call WakaTime and Toggl APIs
-  const wakaTimeActivity = await getActivity(flags.day, flags.minDuration, flags.wakatime);
+  const rawActivity = await getActivity(flags.day, flags.minDuration, flags.wakatime);
   const togglInfo = await getInfo(flags.toggl);
+
+  // Merge nearby entries for the same project and enforce minimum duration
+  const wakaTimeActivity = applyMinimumDuration(mergeEntries(rawActivity));
+  if (wakaTimeActivity.length < rawActivity.length) {
+    ora(`Merged ${rawActivity.length} entries into ${wakaTimeActivity.length}.`).info();
+  }
 
   // List all WakaTime projects
   const wakaTimeProjects = Object.keys(
@@ -78,4 +87,39 @@ function alreadyExists(projectId, start, duration, entries) {
         entry.start.substr(0, 19) === start.substr(0, 19) && entry.duration === duration && entry.pid === projectId,
     ),
   );
+}
+
+function mergeEntries(entries) {
+  if (entries.length === 0) return [];
+
+  const sorted = [...entries].sort((a, b) => {
+    const projCmp = a.project.toLowerCase().localeCompare(b.project.toLowerCase());
+    if (projCmp !== 0) return projCmp;
+    return a.time - b.time;
+  });
+
+  const merged = [{ ...sorted[0] }];
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = merged[merged.length - 1];
+    const curr = sorted[i];
+    const prevEnd = prev.time + prev.duration;
+    const gap = curr.time - prevEnd;
+
+    if (curr.project.toLowerCase() === prev.project.toLowerCase() && gap <= MERGE_GAP_SECONDS) {
+      prev.duration = curr.time + curr.duration - prev.time;
+    } else {
+      merged.push({ ...curr });
+    }
+  }
+
+  return merged;
+}
+
+function applyMinimumDuration(entries) {
+  return entries.map((entry) => {
+    if (entry.duration < MIN_ENTRY_DURATION) {
+      return { ...entry, duration: MIN_ENTRY_DURATION };
+    }
+    return entry;
+  });
 }
